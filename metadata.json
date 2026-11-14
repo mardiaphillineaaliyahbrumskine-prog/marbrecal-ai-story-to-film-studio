@@ -1,0 +1,8 @@
+{
+  "name": "MARBRECAL AI – Story-to-Film Studio",
+  "description": "An AI Filmmaking Studio by MARDIA STUDIO. Transform original story ideas into film synopses, formatted screenplays, character profiles, cinematic storyboards, and production plans.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
