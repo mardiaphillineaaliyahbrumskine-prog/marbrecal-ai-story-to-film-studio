@@ -222,5 +222,5 @@ export function downloadTextFile(filename: string, content: string, mimeType = '
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }

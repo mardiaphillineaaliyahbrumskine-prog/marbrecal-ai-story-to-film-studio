@@ -1,7 +1,8 @@
-import {Check, Copy, Download, FileArchive, FileText, Loader2, Printer, ShieldCheck} from 'lucide-react';
+import {Check, Copy, Download, FileArchive, FileText, Printer, ShieldCheck} from 'lucide-react';
 import {useEffect, useMemo, useState} from 'react';
 import type {FilmProject} from '../types/film';
 import {downloadTextFile, formatProjectAsDossier} from '../utils/exportProject';
+import {PreviewSummary} from './PreviewSummary';
 
 interface ExportStudioProps {
   project: FilmProject;
@@ -17,8 +18,6 @@ export function ExportStudio({project}: ExportStudioProps) {
   const [copied, setCopied] = useState(false);
   const [manifest, setManifest] = useState<BackupManifest | null>(null);
   const [showFiles, setShowFiles] = useState(false);
-  const [downloadingZip, setDownloadingZip] = useState(false);
-  const [zipError, setZipError] = useState<string | null>(null);
 
   const dossierText = useMemo(() => formatProjectAsDossier(project), [project]);
 
@@ -54,29 +53,7 @@ export function ExportStudio({project}: ExportStudioProps) {
     }
   };
 
-  const handleDownloadBackupZip = async () => {
-    setDownloadingZip(true);
-    setZipError(null);
-    try {
-      const response = await fetch('/api/studio/backup-zip');
-      if (!response.ok) {
-        throw new Error('Unable to generate ZIP backup archive.');
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = manifest?.filename || 'marbrecal-ai-story-to-film-studio-backup.zip';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setZipError(err instanceof Error ? err.message : 'Failed to download ZIP backup.');
-    } finally {
-      setDownloadingZip(false);
-    }
-  };
+  const backupFilename = manifest?.filename || 'marbrecal-ai-story-to-film-studio-backup.zip';
 
   return (
     <div className="space-y-8">
@@ -164,6 +141,8 @@ export function ExportStudio({project}: ExportStudioProps) {
         </div>
       </div>
 
+      <PreviewSummary project={project} dossierText={dossierText} />
+
       {/* Studio Source Backup ZIP Card */}
       <section className="no-print rounded-xl border border-[#C8A24B]/40 bg-[#141310] p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -183,24 +162,14 @@ export function ExportStudio({project}: ExportStudioProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              disabled={downloadingZip}
-              onClick={() => void handleDownloadBackupZip()}
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#C8A24B] px-4 py-2.5 text-xs font-semibold text-[#09090B] transition-colors hover:bg-[#D9B45D] disabled:opacity-60"
+            <a
+              href={`/api/studio/backup-zip/${backupFilename}`}
+              download={backupFilename}
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#C8A24B] px-4 py-2.5 text-xs font-semibold text-[#09090B] transition-colors hover:bg-[#D9B45D]"
             >
-              {downloadingZip ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Packaging ZIP...
-                </>
-              ) : (
-                <>
-                  <FileArchive className="h-4 w-4" />
-                  Download Source Backup (.zip)
-                </>
-              )}
-            </button>
+              <FileArchive className="h-4 w-4" />
+              Download Source Backup (.zip)
+            </a>
 
             {manifest && (
               <button
@@ -213,10 +182,6 @@ export function ExportStudio({project}: ExportStudioProps) {
             )}
           </div>
         </div>
-
-        {zipError && (
-          <p className="mt-3 text-xs text-red-300">{zipError}</p>
-        )}
 
         {showFiles && manifest && (
           <div className="mt-4 max-h-56 overflow-y-auto rounded-lg border border-[#222228] bg-[#09090B] p-4">

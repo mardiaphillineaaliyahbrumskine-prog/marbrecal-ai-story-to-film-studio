@@ -378,22 +378,28 @@ async function createServer() {
     }
   });
 
-  app.get('/api/studio/backup-zip', (_req, res) => {
+  const sendBackupZip = (_req: express.Request, res: express.Response) => {
     try {
       const files = collectSafeBackupFiles(__dirname);
       const zipBuffer = buildZipArchive(__dirname, files);
+      res.status(200);
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader(
         'Content-Disposition',
         'attachment; filename="marbrecal-ai-story-to-film-studio-backup.zip"',
       );
       res.setHeader('Content-Length', String(zipBuffer.length));
-      res.send(zipBuffer);
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Cache-Control', 'no-store');
+      res.end(zipBuffer);
     } catch (err) {
       const formatted = formatApiError(err);
       res.status(formatted.status).json({error: formatted.message, code: 'BACKUP_ZIP_ERROR'});
     }
-  });
+  };
+
+  app.get('/api/studio/backup-zip', sendBackupZip);
+  app.get('/api/studio/backup-zip/:filename', sendBackupZip);
 
   // 0. Multimodal Reference Image Understanding
   app.post('/api/studio/analyze-image', async (req, res) => {
