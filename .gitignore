@@ -1,8 +1,30 @@
+# Dependencies & caches
 node_modules/
+.vite/
+
+# Production build & test artifacts
 build/
 dist/
 coverage/
-.DS_Store
-*.log
-.env*
+server.js
+
+# Environment variables, API keys & credentials
+.env
+.env.*
 !.env.example
+*.pem
+*.key
+*.p12
+*.secret
+secrets/
+credentials.json
+firebase-applet-config.json
+
+# Generated archives & logs
+*.zip
+*.log
+npm-debug.log*
+
+# OS & editor files
+.DS_Store
+Thumbs.db
